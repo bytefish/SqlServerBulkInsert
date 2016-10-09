@@ -1,6 +1,8 @@
 # SqlServerBulkInsert #
 
-SqlServerBulkInsert is a library for efficient bulk inserts to SQL Server databases. It wraps the ``SqlBulkCopy`` class behind a nice Fluent API.
+[SqlServerBulkInsert](https://github.com/bytefish/SqlServerBulkInsert) is a library for efficient bulk inserts to SQL Server databases. 
+
+It wraps the [SqlBulkCopy](https://msdn.microsoft.com/de-de/library/system.data.sqlclient.sqlbulkcopy(v=vs.110).aspx) class behind a nice Fluent API.
 
 ## Example ##
 
