@@ -1,0 +1,8 @@
+bin
+obj
+.vs
+*.suo
+packages
+
+project.lock.json
+*.xproj.user
