@@ -7,3 +7,4 @@ packages
 
 project.lock.json
 *.xproj.user
+*.csproj.user

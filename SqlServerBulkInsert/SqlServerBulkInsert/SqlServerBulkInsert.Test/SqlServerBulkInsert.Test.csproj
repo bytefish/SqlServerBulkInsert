@@ -42,8 +42,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Integration\BatchSizeIntegrationTest.cs" />
     <Compile Include="Integration\BenchmarkIntegrationTest.cs" />
     <Compile Include="Mapping\BasicDataTypesTests.cs" />
+    <Compile Include="Measurement\MeasurementUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Base\TransactionalTestBase.cs" />
   </ItemGroup>
