@@ -81,7 +81,7 @@ namespace SqlServerBulkInsert.Test.Integration
                     var bulkInsert = new SqlServerBulkInsert<TestEntity>(new TestEntityMapping(), bulkOptions);
 
                     // Experiment Name:
-                    var experimentName = string.Format("BatchExperiment (BatchSize = {0}, Streaming = {1})", batchSize, streamingMode);
+                    var experimentName = string.Format("BatchExperiment (NumberOfEntities = {0}, BatchSize = {1}, Streaming = {2})", numberOfEntities, batchSize, streamingMode);
 
                     // Measure and Print the Elapsed Time:
                     MeasurementUtils.MeasureElapsedTime(experimentName, () => WriteDataInTransaction(bulkInsert, GenerateEntities(numberOfEntities)));

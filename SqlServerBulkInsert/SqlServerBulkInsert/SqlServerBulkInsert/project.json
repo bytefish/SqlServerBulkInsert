@@ -14,7 +14,7 @@
     "authors": [
       "Philipp Wagner"
     ],
-    "tags": [ "sql", "sql server", "bulk", "bulk insert" ],
+    "tags": [ "sql", "sqlserver", "bulk" ],
     "requireLicenseAcceptance": false,
     "projectUrl": "https://github.com/bytefish/SqlServerBulkInsert",
     "summary": "A library for Bulk Inserts to SQL Server using SqlBulkCopy.",

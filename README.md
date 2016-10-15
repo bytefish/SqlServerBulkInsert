@@ -4,6 +4,23 @@
 
 It wraps the [SqlBulkCopy](https://msdn.microsoft.com/de-de/library/system.data.sqlclient.sqlbulkcopy(v=vs.110).aspx) class behind a nice Fluent API.
 
+## Benchmark Results ##
+
+[Benchmark]: https://github.com/bytefish/SqlServerBulkInsert/blob/master/SqlServerBulkInsert/SqlServerBulkInsert/SqlServerBulkInsert.Test/Integration/BatchSizeIntegrationTest.cs
+
+The [Benchmark] bulk writes 1000000 entities to an SQL Server database and measures the elapsed time.
+
+```
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 10000, Streaming = True)] Elapsed Time = 00:00:10.68
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 50000, Streaming = True)] Elapsed Time = 00:00:11.62
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 80000, Streaming = True)] Elapsed Time = 00:00:12.76
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 100000, Streaming = True)] Elapsed Time = 00:00:11.67
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 10000, Streaming = False)] Elapsed Time = 00:00:11.03
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 50000, Streaming = False)] Elapsed Time = 00:00:11.64
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 80000, Streaming = False)] Elapsed Time = 00:00:11.54
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 100000, Streaming = False)] Elapsed Time = 00:00:12.54
+```
+
 ## Example ##
 
 ```csharp
@@ -18,8 +35,10 @@ using System.Net;
 using System.Net.NetworkInformation;
 using SqlServerBulkInsert;
 using System.Data.SqlClient;
+using SqlServerBulkInsert.Mapping;
+using SqlServerBulkInsert.Test.Base;
 
-namespace SqlServerBulkInsert.Test
+namespace SqlServerBulkInsert.Test.Mapping
 {
     [TestFixture]
     public class BulkCopyTest : TransactionalTestBase
@@ -53,6 +72,16 @@ namespace SqlServerBulkInsert.Test
             }
         }
 
+        private class TestEntityMapping : AbstractMap<TestEntity>
+        {
+            public TestEntityMapping()
+                : base("UnitTest", "BulkInsertSample")
+            {
+                Map("ColInt32", x => x.Int32);
+                Map("ColString", x => x.String);
+            }
+        }
+
         /// <summary>
         /// The table definition used in the unit test.
         /// </summary>
@@ -66,14 +95,13 @@ namespace SqlServerBulkInsert.Test
         protected override void OnSetupInTransaction()
         {
             tableDefinition = new TableDefintion("UnitTest", "BulkInsertSample");
-            
-            subject = new SqlServerBulkInsert<TestEntity>(tableDefinition.SchemaName, tableDefinition.TableName)
-                .Map("ColInt32", x => x.Int32)
-                .Map("ColString", x => x.String);
+
+            subject = new SqlServerBulkInsert<TestEntity>(new TestEntityMapping());
+
         }
 
         [Test]
-        public void Test_SmallInt()
+        public void SmallIntMappingTest()
         {
             // Create the Table:
             CreateTable(tableDefinition);
@@ -92,7 +120,7 @@ namespace SqlServerBulkInsert.Test
             };
 
             // Save the test data as Bulk:
-            subject.SaveAll(connection, transaction, new[] { entity0, entity1 });
+            subject.Write(connection, transaction, new[] { entity0, entity1 });
 
             // Check if we have inserted the correct amount of rows:
             Assert.AreEqual(2, GetRowCount(tableDefinition));
