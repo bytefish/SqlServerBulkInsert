@@ -4,7 +4,7 @@
 using NUnit.Framework;
 using System.Data.SqlClient;
 
-namespace SqlServerBulkInsert.Test
+namespace SqlServerBulkInsert.Test.Base
 {
     [TestFixture]
     public class TransactionalTestBase

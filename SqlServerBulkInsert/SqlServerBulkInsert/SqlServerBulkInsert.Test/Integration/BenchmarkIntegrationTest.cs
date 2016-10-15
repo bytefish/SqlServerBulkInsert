@@ -1,20 +1,18 @@
-﻿// Copyright (c) Philipp Wagner. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using NUnit.Framework;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.NetworkInformation;
-using SqlServerBulkInsert;
-using System.Data.SqlClient;
+﻿using NUnit.Framework;
 using SqlServerBulkInsert.Mapping;
+using SqlServerBulkInsert.Options;
+using SqlServerBulkInsert.Test.Base;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace SqlServerBulkInsert.Test
+namespace SqlServerBulkInsert.Test.Integration
 {
     [TestFixture]
-    public class BulkCopyTest : TransactionalTestBase
+    public class BenchmarkIntegrationTest : TransactionalTestBase
     {
         /// <summary>
         /// The strongly entity, which is going to be inserted.
@@ -39,7 +37,7 @@ namespace SqlServerBulkInsert.Test
                 TableName = tableName;
             }
 
-            public string GetFullQualifiedName() 
+            public string GetFullQualifiedName()
             {
                 return string.Format("[{0}].[{1}]", SchemaName, TableName);
             }
@@ -68,48 +66,43 @@ namespace SqlServerBulkInsert.Test
         protected override void OnSetupInTransaction()
         {
             tableDefinition = new TableDefintion("UnitTest", "BulkInsertSample");
-
-            subject = new SqlServerBulkInsert<TestEntity>(new TestEntityMapping());
-
         }
-
+        
         [Test]
-        public void Test_SmallInt()
+        public void OneMillionEntitiesTest()
         {
+            // Bulk Options:
+            var bulkOptions = new BulkCopyOptions(70000, TimeSpan.FromSeconds(30), true, SqlBulkCopyOptions.Default);
+
+            // Build the Test Subject:
+            var subject = new SqlServerBulkInsert<TestEntity>(new TestEntityMapping(), bulkOptions);
+
             // Create the Table:
             CreateTable(tableDefinition);
 
-            // Create the Test Data:
-            var entity0 = new TestEntity()
-            {
-                Int32 = 10,
-                String = "Hello World"
-            };
+            // One Million Entities:
+            var numberOfEntities = 1000000;
 
-            var entity1 = new TestEntity()
-            {
-                Int32 = 20,
-                String = "Hello World 2.0"
-            };
+            // Create the Enumerable Test Data:
+            var data = GenerateEntities(numberOfEntities);
 
             // Save the test data as Bulk:
-            subject.Write(connection, transaction, new[] { entity0, entity1 });
+            subject.Write(connection, transaction, data);
 
             // Check if we have inserted the correct amount of rows:
-            Assert.AreEqual(2, GetRowCount(tableDefinition));
-
-            // Now get all results and order them by their Int32 value:
-            var orderedResults = GetAll(tableDefinition).OrderBy(x => x.Int32).ToArray();
-
-            // And assert the result:
-            Assert.AreEqual(10, orderedResults[0].Int32);
-            Assert.AreEqual("Hello World", orderedResults[0].String);
-
-            Assert.AreEqual(20, orderedResults[1].Int32);
-            Assert.AreEqual("Hello World 2.0", orderedResults[1].String);
-
+            Assert.AreEqual(numberOfEntities, GetRowCount(tableDefinition));
         }
-     
+
+        private IEnumerable<TestEntity> GenerateEntities(int numberOfEntities)
+        {
+            return Enumerable.Range(0, numberOfEntities)
+                .Select(x => new TestEntity
+                {
+                    Int32 = x,
+                    String = string.Format("Value {0}", x)
+                });
+        }
+
         private int CreateTable(TableDefintion tableDefinition)
         {
             string cmd = string.Format("CREATE TABLE {0}(ColInt32 int, ColString varchar(50));", tableDefinition.GetFullQualifiedName());
@@ -131,38 +124,7 @@ namespace SqlServerBulkInsert.Test
                 sqlCommand.Connection = connection;
                 sqlCommand.Transaction = transaction;
 
-                return (Int32) sqlCommand.ExecuteScalar();
-            }
-        }
-        
-        private List<TestEntity> GetAll(TableDefintion tableDefinition)
-        {
-            var results = new List<TestEntity>();
-            
-            using (var reader = GetAllRaw(tableDefinition))
-            {
-                while (reader.Read())
-                {
-                    results.Add(new TestEntity
-                    {
-                        Int32 = reader.GetInt32(reader.GetOrdinal("ColInt32")),
-                        String = reader.GetString(reader.GetOrdinal("ColString"))
-                    });
-                }
-            }
-
-            return results;
-        }
-
-        private SqlDataReader GetAllRaw(TableDefintion tableDefinition)
-        {
-            string cmd = string.Format("SELECT * FROM {0};", tableDefinition.GetFullQualifiedName());
-            using (var sqlCommand = new SqlCommand(cmd))
-            {
-                sqlCommand.Connection = connection;
-                sqlCommand.Transaction = transaction;
-
-                return sqlCommand.ExecuteReader();
+                return (Int32)sqlCommand.ExecuteScalar();
             }
         }
     }
