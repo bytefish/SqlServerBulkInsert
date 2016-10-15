@@ -49,8 +49,7 @@ namespace SqlServerBulkInsert.Reader
         {
             Dispose();
         }
-
-
+        
         public bool NextResult()
         {
             throw new NotImplementedException();
