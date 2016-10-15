@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using SqlServerBulkInsert;
 using System.Data.SqlClient;
+using SqlServerBulkInsert.Mapping;
 
 namespace SqlServerBulkInsert.Test
 {
@@ -44,6 +45,16 @@ namespace SqlServerBulkInsert.Test
             }
         }
 
+        private class TestEntityMapping : AbstractMap<TestEntity>
+        {
+            public TestEntityMapping()
+                : base("UnitTest", "BulkInsertSample")
+            {
+                Map("ColInt32", x => x.Int32);
+                Map("ColString", x => x.String);
+            }
+        }
+
         /// <summary>
         /// The table definition used in the unit test.
         /// </summary>
@@ -57,10 +68,9 @@ namespace SqlServerBulkInsert.Test
         protected override void OnSetupInTransaction()
         {
             tableDefinition = new TableDefintion("UnitTest", "BulkInsertSample");
-            
-            subject = new SqlServerBulkInsert<TestEntity>(tableDefinition.SchemaName, tableDefinition.TableName)
-                .Map("ColInt32", x => x.Int32)
-                .Map("ColString", x => x.String);
+
+            subject = new SqlServerBulkInsert<TestEntity>(new TestEntityMapping());
+
         }
 
         [Test]
@@ -83,7 +93,7 @@ namespace SqlServerBulkInsert.Test
             };
 
             // Save the test data as Bulk:
-            subject.SaveAll(connection, transaction, new[] { entity0, entity1 });
+            subject.Write(connection, transaction, new[] { entity0, entity1 });
 
             // Check if we have inserted the correct amount of rows:
             Assert.AreEqual(2, GetRowCount(tableDefinition));

@@ -8,6 +8,8 @@ namespace SqlServerBulkInsert
 {
     public interface ISqlServerBulkInsert<TEntity>
     {
-        void SaveAll(SqlConnection connection, SqlTransaction transaction, IEnumerable<TEntity> entities);
+        void Write(SqlConnection connection, IEnumerable<TEntity> entities);
+
+        void Write(SqlConnection connection, SqlTransaction transaction, IEnumerable<TEntity> entities);
     }
 }

@@ -183,7 +183,9 @@ namespace SqlServerBulkInsert.Reader
 
         public bool IsDBNull(int i)
         {
-            throw new NotImplementedException();
+            var value = columns[i].GetValue(sourceEnumerator.Current);
+
+            return value == null;
         }
 
         public object this[string name]

@@ -19,7 +19,6 @@ namespace SqlServerBulkInsert.Model
 
     public class ColumnDefinition<TEntityType, TPropertyType> : ColumnDefinition<TEntityType>
     {
-        public readonly string ColumnName;
         public readonly Func<TEntityType, TPropertyType> ValueGetter;
 
         public ColumnDefinition(string columnName, Func<TEntityType, TPropertyType> valueGetter) 

@@ -43,8 +43,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ISqlServerBulkInsert.cs" />
+    <Compile Include="Mapping\AbstractMap.cs" />
     <Compile Include="Model\ColumnDefinition.cs" />
     <Compile Include="Model\TableDefinition.cs" />
+    <Compile Include="Options\BulkCopyOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reader\StreamingDataReader.cs" />
     <Compile Include="SqlServerBulkInsert.cs" />
