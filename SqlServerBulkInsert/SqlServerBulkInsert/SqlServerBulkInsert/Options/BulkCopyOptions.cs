@@ -23,7 +23,7 @@ namespace SqlServerBulkInsert.Options
         }
 
         public BulkCopyOptions()
-            : this(10000, TimeSpan.FromSeconds(30), true, SqlBulkCopyOptions.Default)
+            : this(70000, TimeSpan.FromSeconds(30), true, SqlBulkCopyOptions.Default)
         {
         }
     }
