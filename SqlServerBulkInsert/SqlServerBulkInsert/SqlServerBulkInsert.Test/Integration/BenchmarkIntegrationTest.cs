@@ -58,11 +58,6 @@ namespace SqlServerBulkInsert.Test.Integration
         /// </summary>
         private TableDefintion tableDefinition;
 
-        /// <summary>
-        /// The SqlServerBulkInsert, which will be tested.
-        /// </summary>
-        private SqlServerBulkInsert<TestEntity> subject;
-
         protected override void OnSetupInTransaction()
         {
             tableDefinition = new TableDefintion("UnitTest", "BulkInsertSample");
