@@ -1,8 +1,20 @@
 # SqlServerBulkInsert #
 
-[SqlServerBulkInsert](https://github.com/bytefish/SqlServerBulkInsert) is a library for efficient bulk inserts to SQL Server databases. 
+[SqlServerBulkInsert]: https://github.com/bytefish/SqlServerBulkInsert
+
+[SqlServerBulkInsert] is a library for efficient bulk inserts to SQL Server databases. 
 
 It wraps the [SqlBulkCopy](https://msdn.microsoft.com/de-de/library/system.data.sqlclient.sqlbulkcopy(v=vs.110).aspx) class behind a nice Fluent API.
+
+## Installing SqlServerBulkInsert ##
+
+You can use [NuGet](https://www.nuget.org) to install [SqlServerBulkInsert]. Run the following command 
+in the [Package Manager Console](http://docs.nuget.org/consume/package-manager-console).
+
+```
+PM> Install-Package SqlServerBulkInsert
+```
+
 
 ## Benchmark Results ##
 
