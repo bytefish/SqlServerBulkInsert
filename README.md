@@ -8,17 +8,17 @@ It wraps the [SqlBulkCopy](https://msdn.microsoft.com/de-de/library/system.data.
 
 [Benchmark]: https://github.com/bytefish/SqlServerBulkInsert/blob/master/SqlServerBulkInsert/SqlServerBulkInsert/SqlServerBulkInsert.Test/Integration/BatchSizeIntegrationTest.cs
 
-The [Benchmark] bulk writes 1000000 entities to an SQL Server database and measures the elapsed time.
+The [Benchmark] bulk writes 1000000 entities to an SQL Server 2017 database and measures the elapsed time.
 
 ```
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 10000, Streaming = True)] Elapsed Time = 00:00:10.68
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 50000, Streaming = True)] Elapsed Time = 00:00:11.62
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 80000, Streaming = True)] Elapsed Time = 00:00:12.76
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 100000, Streaming = True)] Elapsed Time = 00:00:11.67
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 10000, Streaming = False)] Elapsed Time = 00:00:11.03
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 50000, Streaming = False)] Elapsed Time = 00:00:11.64
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 80000, Streaming = False)] Elapsed Time = 00:00:11.54
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 100000, Streaming = False)] Elapsed Time = 00:00:12.54
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 10000, Streaming = True)] Elapsed Time = 00:00:07.92
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 50000, Streaming = True)] Elapsed Time = 00:00:07.32
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 80000, Streaming = True)] Elapsed Time = 00:00:06.65
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 100000, Streaming = True)] Elapsed Time = 00:00:09.00
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 10000, Streaming = False)] Elapsed Time = 00:00:07.59
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 50000, Streaming = False)] Elapsed Time = 00:00:07.13
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 80000, Streaming = False)] Elapsed Time = 00:00:06.90
+[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 100000, Streaming = False)] Elapsed Time = 00:00:08.42
 ```
 
 ## Example ##
