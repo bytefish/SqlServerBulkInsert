@@ -1,7 +1,4 @@
-﻿// Copyright (c) Philipp Wagner. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using SqlServerBulkInsert.Mapping;
 using SqlServerBulkInsert.Options;
 using SqlServerBulkInsert.Test.Measurement;
@@ -15,6 +12,8 @@ namespace SqlServerBulkInsert.Test.Integration
     [TestFixture]
     public class BatchSizeIntegrationTest
     {
+        public static readonly string ConnectionString = @"Data Source=.\MSSQLSERVER2017;Integrated Security=true;Initial Catalog=DbUnitTest;";
+
         /// <summary>
         /// The strongly entity, which is going to be inserted.
         /// </summary>
@@ -93,7 +92,7 @@ namespace SqlServerBulkInsert.Test.Integration
         public void WriteDataInTransaction(ISqlServerBulkInsert<TestEntity> bulkInsert, IEnumerable<TestEntity> data)
         {
             // Open a new 
-            using (var connection = new SqlConnection("Data Source=localhost\\SQLEXPRESS;Integrated Security=true;Initial Catalog=DbUnitTest;"))
+            using (var connection = new SqlConnection(ConnectionString))
             {
                 connection.Open();
 

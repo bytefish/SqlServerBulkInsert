@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using SqlServerBulkInsert.Model;
 
 namespace SqlServerBulkInsert.Reader
@@ -27,7 +29,7 @@ namespace SqlServerBulkInsert.Reader
     /// A simple implementation of a DataReader used for running an SqlBulkCopy.
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
-    public class StreamingDataReader<TEntity> : IDataReader
+    public class StreamingDataReader<TEntity> : DbDataReader
     {
         private readonly TableDefinition table;
 
@@ -45,172 +47,165 @@ namespace SqlServerBulkInsert.Reader
             this.ordinalLookupTable = ColumnDefinitionUtils.BuildLookupTable(columns);           
         }
 
-        public void Close()
+        public override void Close()
         {
-            Dispose();
+            DisposeEnumerator();
         }
         
-        public bool NextResult()
+        public override bool NextResult()
         {
             throw new NotImplementedException();
         }
 
-        public bool Read()
+        public override bool Read()
         {
             return sourceEnumerator.MoveNext();
         }
 
-        public void Dispose()
+        public void DisposeEnumerator()
         {
             sourceEnumerator.Dispose();
         }
 
-        public int FieldCount
+        public override int FieldCount
         {
             get { return columns.Length; }
         }
 
-        public string TableName
-        {
-            get { return table.TableName; }
-        }
+        public override bool HasRows { get; }
 
-        public string SchemaName
-        {
-            get { return table.Schema; }
-        }
-
-        public bool GetBoolean(int i)
+        public override bool GetBoolean(int i)
         {
             throw new NotImplementedException();
         }
 
-        public byte GetByte(int i)
+        public override  byte GetByte(int i)
         {
             throw new NotImplementedException();
         }
 
-        public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
+        public override long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
         {
             throw new NotSupportedException();
         }
 
-        public char GetChar(int i)
+        public override char GetChar(int i)
         {
             throw new NotImplementedException();
         }
 
-        public long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
+        public override long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
+        {
+            throw new NotSupportedException();
+        }
+        
+
+        public override string GetDataTypeName(int i)
         {
             throw new NotSupportedException();
         }
 
-        public IDataReader GetData(int i)
+        public override DateTime GetDateTime(int i)
         {
             throw new NotSupportedException();
         }
 
-        public string GetDataTypeName(int i)
+        public override decimal GetDecimal(int i)
         {
             throw new NotSupportedException();
         }
 
-        public DateTime GetDateTime(int i)
+        public override double GetDouble(int i)
         {
             throw new NotSupportedException();
         }
 
-        public decimal GetDecimal(int i)
+        public override IEnumerator GetEnumerator()
+        {
+            return sourceEnumerator;
+        }
+
+        public override Type GetFieldType(int i)
         {
             throw new NotSupportedException();
         }
 
-        public double GetDouble(int i)
+        public override float GetFloat(int i)
         {
             throw new NotSupportedException();
         }
 
-        public Type GetFieldType(int i)
-        {
-            throw new NotSupportedException();
-        }
-
-        public float GetFloat(int i)
-        {
-            throw new NotSupportedException();
-        }
-
-        public Guid GetGuid(int i)
+        public override Guid GetGuid(int i)
         {
             throw new NotImplementedException();
         }
 
-        public short GetInt16(int i)
+        public override short GetInt16(int i)
         {
             throw new NotImplementedException();
         }
 
-        public int GetInt32(int i)
+        public override int GetInt32(int i)
         {
             throw new NotImplementedException();
         }
 
-        public long GetInt64(int i)
+        public override long GetInt64(int i)
         {
             throw new NotImplementedException();
         }
 
-        public string GetName(int i)
+        public override string GetName(int i)
         {
             return columns[i].ColumnName;
         }
 
-        public int GetOrdinal(string name)
+        public override int GetOrdinal(string name)
         {
             return ordinalLookupTable[name];
         }
 
-        public string GetString(int i)
+        public override string GetString(int i)
         {
             throw new NotImplementedException();
         }
 
-        public int GetValues(object[] values)
+        public override int GetValues(object[] values)
         {
             throw new NotImplementedException();
         }
 
-        public bool IsDBNull(int i)
+        public override bool IsDBNull(int i)
         {
             var value = columns[i].GetValue(sourceEnumerator.Current);
 
             return value == null;
         }
 
-        public object this[string name]
+        public override object this[string name]
         {
             get { throw new NotImplementedException(); }
         }
 
-        public object this[int i]
+        public override object this[int i]
         {
             get { throw new NotImplementedException(); }
         }
 
-        public DataTable GetSchemaTable()
+        public override DataTable GetSchemaTable()
         {
             throw new NotImplementedException();
         }
-        
-        object IDataRecord.GetValue(int i)
+
+        public override object GetValue(int i)
         {
             return columns[i].GetValue(sourceEnumerator.Current);
         }
 
-        public int Depth { get; private set; }
+        public override int Depth { get; }
 
-        public bool IsClosed { get; private set; }
+        public override bool IsClosed { get; }
 
-        public int RecordsAffected { get; private set; }
+        public override int RecordsAffected { get; }
     }
 }

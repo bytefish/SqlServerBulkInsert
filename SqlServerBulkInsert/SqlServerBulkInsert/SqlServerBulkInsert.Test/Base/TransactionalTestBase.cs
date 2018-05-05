@@ -6,7 +6,6 @@ using System.Data.SqlClient;
 
 namespace SqlServerBulkInsert.Test.Base
 {
-    [TestFixture]
     public class TransactionalTestBase
     {
         protected SqlConnection connection;
@@ -17,7 +16,7 @@ namespace SqlServerBulkInsert.Test.Base
         {
             OnSetupBeforeTransaction();
 
-            connection = new SqlConnection("Data Source=localhost\\SQLEXPRESS;Integrated Security=true;Initial Catalog=DbUnitTest;");
+            connection = new SqlConnection(@"Data Source=.\MSSQLSERVER2017;Integrated Security=true;Initial Catalog=DbUnitTest;");
             connection.Open();
 
             transaction = connection.BeginTransaction();
