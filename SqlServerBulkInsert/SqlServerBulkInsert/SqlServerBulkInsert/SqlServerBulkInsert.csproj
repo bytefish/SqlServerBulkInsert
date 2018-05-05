@@ -1,7 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Philipp Wagner</Authors>
+    <Company />
+    <Product />
+    <Description>A library for Bulk Inserts to SQL Server using SqlBulkCopy.</Description>
+    <Copyright>Copyright © 2018 Philipp Wagner</Copyright>
+    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/bytefish/SqlServerBulkInsert</PackageProjectUrl>
+    <PackageTags>sqlserver, bulk</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
