@@ -91,7 +91,7 @@ public class SqlServerMapper<TEntity>
     /// </summary>
     public SqlServerMapper<TEntity> Map<TValue>(string columnName, SqlServerType<TValue> type, Func<TEntity, TValue> extractor)
     {
-        SqlServerColumnMapping<TEntity> mapping = new SqlServerColumnMapping<TEntity>(
+        SqlServerColumnMapping<TEntity> mapping = new(
             type.DbType,
             type.Precision,
             type.Scale,
@@ -106,7 +106,7 @@ public class SqlServerMapper<TEntity>
     /// </summary>
     public SqlServerMapper<TEntity> Map<TValue>(string columnName, SqlServerType<TValue?> type, Func<TEntity, TValue?> extractor) where TValue : struct
     {
-        SqlServerColumnMapping<TEntity> mapping = new SqlServerColumnMapping<TEntity>(
+        SqlServerColumnMapping<TEntity> mapping = new(
             type.DbType,
             type.Precision,
             type.Scale,
@@ -130,6 +130,7 @@ internal class SqlServerBulkDataAdapter<TEntity> : IDataReader
 {
     private readonly IEnumerator<TEntity> _iterator;
     private readonly IReadOnlyList<(string Name, SqlServerColumnMapping<TEntity> Mapping)> _mappings;
+
     private TEntity? _current;
 
     public SqlServerBulkDataAdapter(IEnumerable<TEntity> entities, SqlServerMapper<TEntity> mapper)
@@ -189,7 +190,9 @@ internal class SqlServerBulkDataAdapter<TEntity> : IDataReader
     public IDataReader GetData(int i) => null!;
 
     public string GetDataTypeName(int i) => _mappings[i].Mapping.DbType.ToString();
+
     public DateTime GetDateTime(int i) => (DateTime)GetValue(i);
+
     public decimal GetDecimal(int i) => (decimal)GetValue(i);
 
     public double GetDouble(int i) => (double)GetValue(i);
@@ -229,21 +232,24 @@ internal class SqlServerBulkDataAdapter<TEntity> : IDataReader
 public class SqlServerBulkWriter<TEntity>
 {
     private readonly SqlServerMapper<TEntity> _mapper;
-    
+
     private int _batchSize = 0;
-    
+
     private SqlBulkCopyOptions _options = SqlBulkCopyOptions.TableLock | SqlBulkCopyOptions.CheckConstraints;
 
     public SqlServerBulkWriter(SqlServerMapper<TEntity> mapper) => _mapper = mapper;
 
     public SqlServerBulkWriter<TEntity> WithBatchSize(int size) { _batchSize = size; return this; }
-    
+
     public SqlServerBulkWriter<TEntity> WithOptions(SqlBulkCopyOptions options) { _options = options; return this; }
 
+    /// <summary>
+    /// Asynchronously executes the bulk insert.
+    /// </summary>
     public async Task WriteAllAsync(SqlConnection connection, string? schemaName, string tableName, IEnumerable<TEntity> entities, CancellationToken ct = default)
     {
-        using SqlBulkCopy bulkCopy = new SqlBulkCopy(connection, _options, null);
-        
+        using SqlBulkCopy bulkCopy = new(connection, _options, null);
+
         bulkCopy.DestinationTableName = GetDestinationTable(schemaName, tableName);
         bulkCopy.BatchSize = _batchSize;
 
@@ -252,9 +258,29 @@ public class SqlServerBulkWriter<TEntity>
             bulkCopy.ColumnMappings.Add(mapping.Name, mapping.Name);
         }
 
-        using SqlServerBulkDataAdapter<TEntity> adapter = new SqlServerBulkDataAdapter<TEntity>(entities, _mapper);
+        using SqlServerBulkDataAdapter<TEntity> adapter = new(entities, _mapper);
 
         await bulkCopy.WriteToServerAsync(adapter, ct);
+    }
+
+    /// <summary>
+    /// Synchronously executes the bulk insert.
+    /// </summary>
+    public void WriteAll(SqlConnection connection, string? schemaName, string tableName, IEnumerable<TEntity> entities)
+    {
+        using SqlBulkCopy bulkCopy = new(connection, _options, null);
+
+        bulkCopy.DestinationTableName = GetDestinationTable(schemaName, tableName);
+        bulkCopy.BatchSize = _batchSize;
+
+        foreach ((string Name, SqlServerColumnMapping<TEntity> Mapping) mapping in _mapper.GetMappings())
+        {
+            bulkCopy.ColumnMappings.Add(mapping.Name, mapping.Name);
+        }
+
+        using SqlServerBulkDataAdapter<TEntity> adapter = new(entities, _mapper);
+
+        bulkCopy.WriteToServer(adapter);
     }
 
     private string GetDestinationTable(string? schemaName, string tableName)
