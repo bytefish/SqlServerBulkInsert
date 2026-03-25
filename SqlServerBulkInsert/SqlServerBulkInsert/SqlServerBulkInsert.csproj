@@ -6,7 +6,7 @@
 		<Company />
 		<Product />
 		<Description>Making SQL Server Bulk Inserts easier.</Description>
-		<PackageTags>csv, parser, csvparser</PackageTags>
+		<PackageTags>sql, bulkinsert, sqlserver</PackageTags>
 		<RepositoryUrl>git://github.com/bytefish/SqlServerBulkInsert</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/bytefish/SqlServerBulkInsert</PackageProjectUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -22,8 +22,21 @@
 		<AssemblyOriginatorKeyFile>SqlServerBulkInsert.snk</AssemblyOriginatorKeyFile>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<IsAotCompatible>true</IsAotCompatible>
+        
+        <!-- Show Readme in NuGet Portal -->
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+
+        <!-- Generate Package on build -->
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
-	<ItemGroup>
+
+    <ItemGroup>
 	  <PackageReference Include="Microsoft.Data.SqlClient" />
 	</ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
 </Project>

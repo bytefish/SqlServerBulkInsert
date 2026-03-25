@@ -7,13 +7,23 @@ from your domain models.
 This library follows the design philosophy of my other libraries, moving away from application language-centric abstractions to a 
 Database-first approach where the mapping is defined by the SQL types of your destination table.
 
+## Setup ##
+
+SqlServerBulkInsert is available on NuGet.
+
+You can add the following dependency to your .csproj to include it in your project:
+
+```xml
+<PackageReference Include="SqlServerBulkInsert" Version="2.0.0" />
+```
+
 ## Key Features ##
 
-* Stateless Mappers: Define your schema mapping once and reuse it across multiple writers or threads.
-* Database-First API: Mapping is driven by SQL Server types (e.g., NVarChar, DateTimeOffset, Int), ensuring correct metadata for the driver.
-* Automatic Bracketing: Automatic escaping of schema, table, and column names using [] to prevent conflicts with reserved keywords. Handles optional schemas gracefully.
-* Zero-Allocation Streaming: Uses a custom IDataReader bridge to pull data lazily from IEnumerable<T>, keeping memory consumption flat.
-* AOT Ready: Fully compatible with Native AOT and trimming in modern .NET.
+* **Stateless Mappers**: Define your schema mapping once and reuse it across multiple writers or threads.
+* **Database-First API**: Mapping is driven by SQL Server types (e.g., NVarChar, DateTimeOffset, Int), ensuring correct metadata for the driver.
+* **Automatic Bracketing**: Automatic escaping of schema, table, and column names using [] to prevent conflicts with reserved keywords. Handles optional schemas gracefully.
+* **Zero-Allocation Streaming**: Uses a custom IDataReader bridge to pull data lazily from IEnumerable<T>, keeping memory consumption flat.
+* **AOT Ready**: Fully compatible with Native AOT and trimming in modern .NET.
 
 ## Quick Start ##
 
