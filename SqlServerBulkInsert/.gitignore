@@ -1,10 +1,14 @@
 bin
 obj
 .vs
-*.xproj
 *.suo
 packages
+*.Artifacts/
+.idea
 
+# Dot Net Core
 project.lock.json
+artifacts/
 *.xproj.user
-*.csproj.user
+*.xproj
+*.user

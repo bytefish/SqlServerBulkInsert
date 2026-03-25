@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+		<Authors>Philipp Wagner</Authors>
+		<Nullable>enable</Nullable>
+		<Company />
+		<Product />
+		<Description>Making SQL Server Bulk Inserts easier.</Description>
+		<PackageTags>csv, parser, csvparser</PackageTags>
+		<RepositoryUrl>git://github.com/bytefish/SqlServerBulkInsert</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/bytefish/SqlServerBulkInsert</PackageProjectUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Copyright>Copyright © 2026</Copyright>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<AssemblyVersion>2.0.0.0</AssemblyVersion>
+		<FileVersion>2.0.0.0</FileVersion>
+		<RepositoryType>git</RepositoryType>
+		<Version>2.0.0</Version>
+		<IncludeSource>True</IncludeSource>
+		<IncludeSymbols>True</IncludeSymbols>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>SqlServerBulkInsert.snk</AssemblyOriginatorKeyFile>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<IsAotCompatible>true</IsAotCompatible>
+	</PropertyGroup>
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.Data.SqlClient" />
+	</ItemGroup>
+</Project>
