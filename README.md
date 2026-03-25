@@ -59,4 +59,3 @@ public async Task SaveDataAsync(SqlConnection conn, IEnumerable<SensorData> data
     await writer.WriteAllAsync(conn, "dbo", "Sensors", data);
 }
 ```
-
