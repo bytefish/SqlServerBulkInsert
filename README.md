@@ -1,207 +1,62 @@
-# SqlServerBulkInsert #
+# SqlServerBulkInsert: SQL Server Bulk Copy for .NET ##
 
-[SqlServerBulkInsert]: https://github.com/bytefish/SqlServerBulkInsert
+SqlServerBulkInsert is a lightweight, database-centric library for performing high-speed bulk inserts into Microsoft SQL Server. It 
+provides a functional, fluent wrapper around the native `SqlBulkCopy` API using a custom `IDataReader` adapter to stream data directly 
+from your domain models.
 
-[SqlServerBulkInsert] is a library for efficient bulk inserts to SQL Server databases. 
+This library follows the design philosophy of my other libraries, moving away from application language-centric abstractions to a 
+Database-first approach where the mapping is defined by the SQL types of your destination table.
 
-It wraps the [SqlBulkCopy](https://msdn.microsoft.com/de-de/library/system.data.sqlclient.sqlbulkcopy(v=vs.110).aspx) class behind a nice Fluent API.
+## Key Features ##
 
-## Installing SqlServerBulkInsert ##
+* Stateless Mappers: Define your schema mapping once and reuse it across multiple writers or threads.
+* Database-First API: Mapping is driven by SQL Server types (e.g., NVarChar, DateTimeOffset, Int), ensuring correct metadata for the driver.
+* Automatic Bracketing: Automatic escaping of schema, table, and column names using [] to prevent conflicts with reserved keywords. Handles optional schemas gracefully.
+* Zero-Allocation Streaming: Uses a custom IDataReader bridge to pull data lazily from IEnumerable<T>, keeping memory consumption flat.
+* AOT Ready: Fully compatible with Native AOT and trimming in modern .NET.
 
-You can use [NuGet](https://www.nuget.org) to install [SqlServerBulkInsert]. Run the following command 
-in the [Package Manager Console](http://docs.nuget.org/consume/package-manager-console).
+## Quick Start ##
 
-```
-PM> Install-Package SqlServerBulkInsert
-```
+### 1. Define your Data Model ###
 
-
-## Benchmark Results ##
-
-[Benchmark]: https://github.com/bytefish/SqlServerBulkInsert/blob/master/SqlServerBulkInsert/SqlServerBulkInsert/SqlServerBulkInsert.Test/Integration/BatchSizeIntegrationTest.cs
-
-The [Benchmark] bulk writes 1000000 entities to an SQL Server 2017 database and measures the elapsed time.
-
-```
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 10000, Streaming = True)] Elapsed Time = 00:00:07.92
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 50000, Streaming = True)] Elapsed Time = 00:00:07.32
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 80000, Streaming = True)] Elapsed Time = 00:00:06.65
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 100000, Streaming = True)] Elapsed Time = 00:00:09.00
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 10000, Streaming = False)] Elapsed Time = 00:00:07.59
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 50000, Streaming = False)] Elapsed Time = 00:00:07.13
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 80000, Streaming = False)] Elapsed Time = 00:00:06.90
-[BatchExperiment (NumberOfEntities = 1000000, BatchSize = 100000, Streaming = False)] Elapsed Time = 00:00:08.42
-```
-
-## Example ##
+Works seamlessly with C# records, structs, or traditional classes.
 
 ```csharp
-// Copyright (c) Philipp Wagner. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+public record SensorData(
+    Guid Id,
+    string Name,
+    int Temperature,
+    decimal SignalStrength,
+    DateTimeOffset Timestamp
+);
+```
 
-using NUnit.Framework;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using SqlServerBulkInsert.Mapping;
-using SqlServerBulkInsert.Test.Base;
+### 2. Define your Mapping (Stateless & Thread-Safe) ###
 
-namespace SqlServerBulkInsert.Test.Mapping
+The `SqlServerMapper<T>` defines the structure. It is stateless and should be instantiated once as a singleton.
+
+```csharp
+private static readonly SqlServerMapper<SensorData> Mapper = 
+    new SqlServerMapper<SensorData>()
+        .Map("Id", SqlServerTypes.UniqueIdentifier, x => x.Id)
+        .Map("Name", SqlServerTypes.NVarChar, x => x.Name)
+        // Automatic handling of primitives and nullable structs
+        .Map("Temperature", SqlServerTypes.Int, x => x.Temperature)
+        .Map("Signal", SqlServerTypes.Decimal, x => x.SignalStrength)
+        .Map("Timestamp", SqlServerTypes.DateTimeOffset, x => x.Timestamp);
+```
+
+### 3. Execute the Bulk Insert ###
+
+The `SqlServerBulkWriter<T>` executes the bulk copy operation.
+
+```csharp
+public async Task SaveDataAsync(SqlConnection conn, IEnumerable<SensorData> data)
 {
-    [TestFixture]
-    public class BulkCopyTest : TransactionalTestBase
-    {
-        /// <summary>
-        /// The strongly entity, which is going to be inserted.
-        /// </summary>
-        private class TestEntity
-        {
-            public Int32 Int32 { get; set; }
-            public String String { get; set; }
-        }
+    var writer = new SqlServerBulkWriter<SensorData>(Mapper)
+        .WithBatchSize(5000);
 
-        /// <summary>
-        /// Holds a TableDefinition and can return the full qualified name.
-        /// </summary>
-        private class TableDefintion
-        {
-            public readonly string SchemaName;
-            public readonly string TableName;
-
-            public TableDefintion(string schemaName, string tableName)
-            {
-                SchemaName = schemaName;
-                TableName = tableName;
-            }
-
-            public string GetFullQualifiedName() 
-            {
-                return string.Format("[{0}].[{1}]", SchemaName, TableName);
-            }
-        }
-
-        private class TestEntityMapping : AbstractMap<TestEntity>
-        {
-            public TestEntityMapping()
-                : base("UnitTest", "BulkInsertSample")
-            {
-                Map("ColInt32", x => x.Int32);
-                Map("ColString", x => x.String);
-            }
-        }
-
-        /// <summary>
-        /// The table definition used in the unit test.
-        /// </summary>
-        private TableDefintion tableDefinition;
-
-        /// <summary>
-        /// The SqlServerBulkInsert, which will be tested.
-        /// </summary>
-        private SqlServerBulkInsert<TestEntity> subject;
-
-        protected override void OnSetupInTransaction()
-        {
-            tableDefinition = new TableDefintion("UnitTest", "BulkInsertSample");
-
-            subject = new SqlServerBulkInsert<TestEntity>(new TestEntityMapping());
-
-        }
-
-        [Test]
-        public void SmallIntMappingTest()
-        {
-            // Create the Table:
-            CreateTable(tableDefinition);
-
-            // Create the Test Data:
-            var entity0 = new TestEntity()
-            {
-                Int32 = 10,
-                String = "Hello World"
-            };
-
-            var entity1 = new TestEntity()
-            {
-                Int32 = 20,
-                String = "Hello World 2.0"
-            };
-
-            // Save the test data as Bulk:
-            subject.Write(connection, transaction, new[] { entity0, entity1 });
-
-            // Check if we have inserted the correct amount of rows:
-            Assert.AreEqual(2, GetRowCount(tableDefinition));
-
-            // Now get all results and order them by their Int32 value:
-            var orderedResults = GetAll(tableDefinition).OrderBy(x => x.Int32).ToArray();
-
-            // And assert the result:
-            Assert.AreEqual(10, orderedResults[0].Int32);
-            Assert.AreEqual("Hello World", orderedResults[0].String);
-
-            Assert.AreEqual(20, orderedResults[1].Int32);
-            Assert.AreEqual("Hello World 2.0", orderedResults[1].String);
-
-        }
-     
-        private int CreateTable(TableDefintion tableDefinition)
-        {
-            string cmd = string.Format("CREATE TABLE {0}(ColInt32 int, ColString varchar(50));", tableDefinition.GetFullQualifiedName());
-
-            using (var sqlCommand = new SqlCommand(cmd))
-            {
-                sqlCommand.Connection = connection;
-                sqlCommand.Transaction = transaction;
-
-                return sqlCommand.ExecuteNonQuery();
-            }
-        }
-
-        private int GetRowCount(TableDefintion tableDefinition)
-        {
-            string cmd = string.Format("SELECT COUNT(*) FROM {0};", tableDefinition.GetFullQualifiedName());
-            using (var sqlCommand = new SqlCommand(cmd))
-            {
-                sqlCommand.Connection = connection;
-                sqlCommand.Transaction = transaction;
-
-                return (Int32) sqlCommand.ExecuteScalar();
-            }
-        }
-        
-        private List<TestEntity> GetAll(TableDefintion tableDefinition)
-        {
-            var results = new List<TestEntity>();
-            
-            using (var reader = GetAllRaw(tableDefinition))
-            {
-                while (reader.Read())
-                {
-                    results.Add(new TestEntity
-                    {
-                        Int32 = reader.GetInt32(reader.GetOrdinal("ColInt32")),
-                        String = reader.GetString(reader.GetOrdinal("ColString"))
-                    });
-                }
-            }
-
-            return results;
-        }
-
-        private SqlDataReader GetAllRaw(TableDefintion tableDefinition)
-        {
-            string cmd = string.Format("SELECT * FROM {0};", tableDefinition.GetFullQualifiedName());
-            using (var sqlCommand = new SqlCommand(cmd))
-            {
-                sqlCommand.Connection = connection;
-                sqlCommand.Transaction = transaction;
-
-                return sqlCommand.ExecuteReader();
-            }
-        }
-    }
+    await writer.WriteAllAsync(conn, "dbo", "Sensors", data);
 }
 ```
 
